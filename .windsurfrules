@@ -1,0 +1,29 @@
+## Project Context
+
+- This project implements a **Model Context Protocol (MCP)** server
+- It leverages Cloudflare's serverless platform to deploy scalable applications.
+- Use pnpm for package management at ALL TIME.
+
+## Coding Conventions
+
+- Write concise, technical JavaScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Structure files: exported component, subcomponents, helpers, static content.
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Favor named exports for components.
+- Use TypeScript for all source files.
+- Follow functional programming paradigms; avoid using classes.
+- Ensure all functions are pure and side-effect free when possible.
+
+## Technology Stack
+
+*   **Language:** TypeScript
+*   **Package Manager:** pnpm
+*   **Runtime:** Node.js
+*   **Framework:** @modelcontextprotocol/sdk
+
+## Error Handling
+
+- Implement comprehensive error handling using @modelcontextprotocol/sdk's built-in mechanisms.
