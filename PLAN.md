@@ -1,83 +1,63 @@
 # EBL MCP Server Development Plan
 
-This document outlines the planned phases and tasks for building the EBL MCP Server, which acts as a **gateway** to a backend Business Unit (BU) API defined in `external/bu/api.yaml`. The server uses the Model Context Protocol TypeScript SDK.
+This document outlines the planned phases and tasks for building the EBL MCP Server, which acts as a **gateway** to a backend Business Unit (BU) API defined in `external/bu/api.yaml`.
 
 ## Phase 1: Project Setup & Core Structure (Completed)
 
 *   [x] Define project scope and core features (Issue, Query, Transfer, Surrender eBL via MCP gateway).
-*   [x] Choose technology stack (TypeScript, pnpm, Node.js, **@modelcontextprotocol/sdk**, Zod).
-*   [x] Create basic project directory structure (`src`, `services`, `models`, `schemas`).
+*   [x] Choose technology stack (TypeScript, pnpm, Node.js, Zod).
+*   [x] Create basic project directory structure (`src`, `models`, `schemas`, `tools`, `util`).
 *   [x] Create initial `README.md`.
 *   [x] Create initial `PLAN.md`.
 *   [x] Initialize project using `pnpm init`.
 *   [x] Set up TypeScript configuration (`tsconfig.json`).
-*   [x] Install base dependencies (`typescript`, `@types/node`, `@modelcontextprotocol/sdk`, `zod`).
-*   [x] Install development runner
+*   [x] Install base dependencies (`typescript`, `@types/node`, `zod`).
 *   [x] Set up linting and formatting (ESLint, Prettier).
-*   [x] Initialize `McpServer` instance in `src/index.ts`.
 *   [x] Implement a basic 'ping' MCP Tool.
 
-## Phase 2: EBL Data Model & Schemas (In Progress)
+## Phase 2: API Integration Setup (Completed)
 
-*   [x] Define TypeScript interfaces/classes for the eBL structure (`src/models/ebl.model.ts`) based on backend API.
-*   [x] **Define Zod schemas (`src/schemas/ebl.schema.ts`) for validating inputs/outputs of MCP Tools/Resources.**
-    *   [x] `issue_ebl` input and output schemas.
-    *   [ ] `get_ebl` output schema.
-    *   [ ] `list_ebls` output schema.
-    *   [ ] `transfer_ebl` input schema.
-    *   [ ] `surrender_ebl` input schema.
-*   [ ] Define helper types/schemas for backend API requests/responses if needed.
+*   [x] Install API integration dependencies (`openapi-fetch`, `openapi-typescript`).
+*   [x] Generate OpenAPI TypeScript definitions from `external/bu/api.yaml` with `openapi-typescript`.
+*   [x] Create client utility (`src/util/client.ts`) with strongly-typed API operations.
+*   [x] Implement authentication utilities (`src/util/auth.ts`) for BU API integration.
+*   [x] Set up error handling for API interactions.
 
-## Phase 3: MCP Resource & Tool Implementation (Gateway Logic)
+## Phase 3: EBL Core Data Model (Completed)
 
-*   [ ] **Set up HTTP client logic using native `fetch`** to communicate with the backend BU server.
-*   [ ] **Implement `issue_ebl` MCP Tool:**
-    *   Validate MCP input using `refinedIssueEblInputSchema` (requires `authentication_id`, `requester_bu_id`, `draft`, `file_content`, etc.).
-    *   Transform input into the format expected by the backend `POST /ebl` request body (including header `X-Business-Unit-ID` from `requester_bu_id`).
-    *   Call the backend `POST /ebl` endpoint using native `fetch`.
-    *   Handle backend response (success/error).
-    *   Transform backend success response (`BillOfLadingRecord`) to match the simplified `issueEblOutputSchema` (containing `{ id, version, holder }`).
-    *   Return the transformed confirmation data as the MCP tool result.
-*   [ ] **Implement `get_ebl` MCP Resource:**
-    *   Define resource template (e.g., `ebl://{id}`).
-    *   Extract eBL ID from the MCP resource request.
-    *   Call the backend `GET /ebl/{id}` endpoint.
-    *   Handle backend response.
-    *   Transform backend response to match the `EblSchema`.
-    *   Return transformed eBL data.
-*   [ ] **Implement `list_ebls` MCP Resource (Optional):**
-    *   Define resource template (e.g., `ebl://list`).
-    *   Handle potential query parameters (filtering/pagination).
-    *   Call the backend `GET /ebl` endpoint (passing necessary query params).
-    *   Handle backend response.
-    *   Transform backend response (list of eBLs) into appropriate MCP format.
-*   [ ] **Implement `transfer_ebl` MCP Tool:**
-    *   Validate MCP input (define schema first).
-    *   Extract eBL ID and new holder info.
-    *   Call the backend `POST /ebl/{id}/transfer` endpoint (or similar, based on `api.yaml`).
-    *   Handle backend response.
-    *   Return confirmation/status.
-*   [ ] **Implement `surrender_ebl` MCP Tool:**
-    *   Validate MCP input (define schema first).
-    *   Extract eBL ID.
-    *   Call the backend `POST /ebl/{id}/surrender` endpoint (or similar).
-    *   Handle backend response.
-    *   Return confirmation/status.
-*   [ ] Implement robust error handling for both MCP interactions and backend API calls.
-*   [ ] Add logging for MCP requests and backend interactions.
+*   [x] Define TypeScript interfaces for the eBL structure (`src/models/ebl.model.ts`) based on the backend API.
+*   [x] Define core enums for eBL states and types.
 
-## Phase 4: Server Configuration & Transport (No Change)
+## Phase 4: Issue EBL Implementation (Completed)
 
-*   [ ] **Configure the MCP Server instance** (name, version, capabilities).
-*   [ ] **Choose and configure a transport mechanism** (e.g., `StdioServerTransport`).
-*   [ ] Implement server startup logic in `src/index.ts` to connect the server instance to the chosen transport.
-*   [ ] *Future:* Investigate integration with external MCP components (Identity Registry, Service Registry) if required by the target environment.
-*   [ ] *Future:* Implement security measures (pass authentication details from MCP context to backend?).
+*   [x] Define Zod schemas for issue_ebl input validation (`src/schemas/ebl.schema.ts`).
+*   [x] Implement refined schema with conditional validation for issue requirements.
+*   [x] Define issue_ebl output schema for tool response.
+*   [x] Implement `issue_ebl` MCP Tool:
+    *   [x] Input validation with the refined schema.
+    *   [x] Transform MCP input to backend API format.
+    *   [x] API integration using OpenAPI-typed client.
+    *   [x] Proper error handling.
+    *   [x] Response transformation to MCP format.
 
-## Phase 5: Testing & Deployment (Adjusted)
+## Phase 5: Additional EBL Operations (Not Started)
+
+*   [ ] **Transfer EBL Implementation:**
+    *   [ ] Define transfer_ebl input schema.
+    *   [ ] Implement transfer_ebl MCP Tool.
+*   [ ] **Surrender EBL Implementation:**
+    *   [ ] Define surrender_ebl input schema.
+    *   [ ] Implement surrender_ebl MCP Tool.
+*   [ ] **Get EBL Implementation:**
+    *   [ ] Define get_ebl output schema.
+    *   [ ] Implement get_ebl MCP Resource or Tool.
+*   [ ] **List EBLs Implementation (Optional):**
+    *   [ ] Define list_ebls output schema.
+    *   [ ] Implement list_ebls MCP Resource or Tool.
+
+## Phase 6: Testing & Deployment (Not Started)
 
 *   [ ] Write unit tests for schema transformations and helper functions.
-*   [ ] Write integration tests simulating MCP client calls and verifying interactions with a *mock* backend server.
-*   [ ] Prepare build scripts (`pnpm build`).
-*   [ ] Document deployment procedures.
-*   [ ] Set up CI/CD pipeline (Optional).
+*   [ ] Write integration tests simulating API calls with mock backend.
+*   [ ] Document API and tool usage.
+*   [ ] Prepare for deployment.

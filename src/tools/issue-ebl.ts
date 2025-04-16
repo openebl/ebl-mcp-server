@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { api, extractErrorMessage } from "../util/client.js";
+import { createApiClient, getDefaultHeaders, extractErrorMessage } from "../util/client.js";
 import { refinedIssueEblInputSchema, issueEblOutputSchema } from "../schemas/ebl.schema.js";
 import type { components } from "../types/bu-scheme.js";
 
@@ -70,11 +70,12 @@ export const handleIssueEblTool = async (args: unknown) => {
     // Convert MCP input to API request format
     const requestBody = convertMcpInputToApiRequest(validatedArgs);
     
+    // Create API client for this request
+    const client = createApiClient();
+    
     // Call the backend API POST /ebl endpoint using openapi-fetch
-    const { data, error } = await api.POST("/ebl", {
-      headers: {
-        "X-Business-Unit-ID": validatedArgs.requester_bu_id
-      },
+    const { data, error } = await client.POST("/ebl", {
+      headers: getDefaultHeaders(validatedArgs.requester_bu_id),
       body: requestBody
     });
     

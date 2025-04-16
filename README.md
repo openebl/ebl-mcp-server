@@ -1,13 +1,13 @@
 # EBL MCP Server
 
-This project implements a server compliant with Maritime Connectivity Platform (MCP) principles to manage electronic Bills of Lading (eBLs). It provides functionalities to issue, query, transfer, and surrender eBLs.
+This project implements a **Model Context Protocol (MCP)** server to manage electronic Bills of Lading (eBLs). It provides functionalities to issue, query, transfer, and surrender eBLs.
 
 ## Technology Stack
 
 *   **Language:** TypeScript
 *   **Package Manager:** pnpm
 *   **Runtime:** Node.js
-*   **Framework:** (To be decided - e.g., Express, Fastify)
+*   **Framework:** @modelcontextprotocol/sdk
 
 ## Core Features
 
