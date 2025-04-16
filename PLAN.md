@@ -9,13 +9,13 @@ This document outlines the planned phases and tasks for building the EBL MCP Ser
 *   [x] Create basic project directory structure (`src`, `services`, `models`, `schemas`).
 *   [x] Create initial `README.md`.
 *   [x] Create initial `PLAN.md`.
-*   [ ] Initialize project using `pnpm init`.
-*   [ ] Set up TypeScript configuration (`tsconfig.json`).
-*   [ ] Install base dependencies (`typescript`, `@types/node`, `@modelcontextprotocol/sdk`, `zod`).
-*   [ ] Install development runner
-*   [ ] Set up linting and formatting (ESLint, Prettier).
-*   [ ] Initialize `McpServer` instance in `src/index.ts`.
-*   [ ] Implement a basic 'ping' MCP Tool.
+*   [x] Initialize project using `pnpm init`.
+*   [x] Set up TypeScript configuration (`tsconfig.json`).
+*   [x] Install base dependencies (`typescript`, `@types/node`, `@modelcontextprotocol/sdk`, `zod`).
+*   [x] Install development runner
+*   [x] Set up linting and formatting (ESLint, Prettier).
+*   [x] Initialize `McpServer` instance in `src/index.ts`.
+*   [x] Implement a basic 'ping' MCP Tool.
 
 ## Phase 2: EBL Data Model & Schemas (In Progress)
 
