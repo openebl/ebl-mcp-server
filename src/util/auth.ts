@@ -18,34 +18,35 @@ export const fetchAuthenticationId = async (businessUnitId: string): Promise<str
   });
 
   // Make the request to the business unit endpoint
-  const { data, error } = await client.GET("/business_unit/{id}", {
+  console.error('Fetching authentication ID for business unit:', businessUnitId);
+  const { data, error } = await client.GET('/business_unit/{id}', {
     headers: {
-      accept: "application/json",
-      "Content-Type": "application/json",
+      accept: 'application/json',
+      'Content-Type': 'application/json',
       Authorization: BU_SERVER_API_KEY ? `Bearer ${BU_SERVER_API_KEY}` : undefined,
     },
     params: { path: { id: businessUnitId } },
   });
-  
+
   // Handle errors
   if (error) {
     console.error('Error fetching authentication ID:', error);
-    throw new Error(`Failed to fetch authentication ID: ${typeof error === 'object' ? JSON.stringify(error) : String(error)}`);
+    throw new Error(
+      `Failed to fetch authentication ID: ${typeof error === 'object' ? JSON.stringify(error) : String(error)}`,
+    );
   }
-  
+
   if (!data) {
     throw new Error('No data returned from business unit endpoint');
   }
 
   // Find first authentication which status is active
-  const activeAuthentication = data.authentications?.find(
-    (auth) => auth.status === "active",
-  );
+  const activeAuthentication = data.authentications?.find((auth) => auth.status === 'active');
 
   if (!activeAuthentication) {
     throw new Error(`No active authentication found for business unit: ${businessUnitId}`);
   }
-  
+
   return activeAuthentication.id ?? '';
 };
 
@@ -60,10 +61,10 @@ export const isAuthenticationActive = async (businessUnitId: string, authenticat
     });
 
     // Get all authentications for the business unit
-    const { data, error } = await client.GET("/business_unit/{id}", {
+    const { data, error } = await client.GET('/business_unit/{id}', {
       headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
+        accept: 'application/json',
+        'Content-Type': 'application/json',
         Authorization: BU_SERVER_API_KEY ? `Bearer ${BU_SERVER_API_KEY}` : undefined,
       },
       params: { path: { id: businessUnitId } },
@@ -75,8 +76,8 @@ export const isAuthenticationActive = async (businessUnitId: string, authenticat
     }
 
     // Find the specified authentication and check if it's active
-    const authRecord = data.authentications.find(auth => auth.id === authenticationId);
-    return authRecord?.status === "active";
+    const authRecord = data.authentications.find((auth) => auth.id === authenticationId);
+    return authRecord?.status === 'active';
   } catch (error) {
     console.error('Error validating authentication:', error);
     return false;

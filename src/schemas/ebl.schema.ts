@@ -18,41 +18,42 @@ const FileContentSchema = z.object({
 });
 
 // Base Input schema for issuing a new electronic Bill of Lading (matching backend request body)
-export const issueEblInputSchema = z.object({
-  // --- Fields required by backend API ---
-  authentication_id: z.string(),
-  requester_bu_id: z.string(), // Used for X-Business-Unit-ID header
-  file_content: FileContentSchema, // Changed from file_info, now required
-  bl_number: z.string(),
-  bl_doc_type: z.nativeEnum(BillOfLadingDocumentType),
-  pol: LocationSchema,
-  pod: LocationSchema,
-  shipper: z.string(), // DID of the shipper BU
-  consignee: z.string(), // DID of the consignee BU
-  release_agent: z.string(), // DID of the release agent BU
-  draft: z.boolean(),
+export const issueEblInputSchema = z
+  .object({
+    // --- Fields required by backend API ---
+    authentication_id: z.string(),
+    requester_bu_id: z.string(), // Used for X-Business-Unit-ID header
+    file_content: FileContentSchema, // Changed from file_info, now required
+    bl_number: z.string(),
+    bl_doc_type: z.nativeEnum(BillOfLadingDocumentType),
+    pol: LocationSchema,
+    pod: LocationSchema,
+    shipper: z.string(), // DID of the shipper BU
+    consignee: z.string(), // DID of the consignee BU
+    release_agent: z.string(), // DID of the release agent BU
+    draft: z.boolean(),
 
-  // --- Optional/Conditional fields based on backend API ---
-  to_order: z.boolean().optional(), // Optional in backend request
-  eta: z.string().date().optional(), // Optional, format: date
-  endorsee: z.string().optional(), // Optional, DID, required if !draft && to_order
-  notify_parties: z.array(z.string()).max(3).optional(), // Optional, DIDs, required if !draft && to_order
-  note: z.string().optional(),
-  encrypt_content: z.boolean().optional().default(false),
-  // metadata: z.any().optional(), // Optional ApplicationMetaData if needed later
+    // --- Optional/Conditional fields based on backend API ---
+    to_order: z.boolean().optional(), // Optional in backend request
+    eta: z.string().date().optional(), // Optional, format: date
+    endorsee: z.string().optional(), // Optional, DID, required if !draft && to_order
+    notify_parties: z.array(z.string()).max(3).optional(), // Optional, DIDs, required if !draft && to_order
+    note: z.string().optional(),
+    encrypt_content: z.boolean().optional().default(false),
+    // metadata: z.any().optional(), // Optional ApplicationMetaData if needed later
 
-  // --- Fields removed (not part of backend input) ---
-  // id: z.string().optional(),
-  // version: z.number().optional(),
-  // status: z.nativeEnum(EblStatus).optional(),
-  // holder: z.string().optional(),
-  // file_info: FileInfoSchema.optional(), // Replaced by file_content
-  // created_at: z.string().datetime().optional(),
-  // created_by: z.string().optional(),
-  // updated_at: z.string().datetime().optional(),
-  // updated_by: z.string().optional(),
-
-}).describe("Input schema for the issue_ebl MCP Tool, mapping to backend POST /ebl request.");
+    // --- Fields removed (not part of backend input) ---
+    // id: z.string().optional(),
+    // version: z.number().optional(),
+    // status: z.nativeEnum(EblStatus).optional(),
+    // holder: z.string().optional(),
+    // file_info: FileInfoSchema.optional(), // Replaced by file_content
+    // created_at: z.string().datetime().optional(),
+    // created_by: z.string().optional(),
+    // updated_at: z.string().datetime().optional(),
+    // updated_by: z.string().optional(),
+  })
+  .describe('Input schema for the issue_ebl MCP Tool, mapping to backend POST /ebl request.');
 
 // Refined input schema for conditional 'endorsee' and 'notify_parties' requirements
 export const refinedIssueEblInputSchema = issueEblInputSchema.refine(
@@ -71,19 +72,20 @@ export const refinedIssueEblInputSchema = issueEblInputSchema.refine(
     // Custom error message for refinement failure
     message: "If issuing (draft=false) and to_order=true, both 'endorsee' and 'notify_parties' must be provided.",
     // Specify paths for error reporting if refinement fails
-    path: ["endorsee", "notify_parties"],
-  }
+    path: ['endorsee', 'notify_parties'],
+  },
 );
 
-// --- Output Schema --- 
+// --- Output Schema ---
 // Represents the simplified confirmation returned by the backend POST /ebl
 // Mapped from BillOfLadingRecord -> BillOfLadingPack
-export const issueEblOutputSchema = z.object({
-  id: z.string().describe("Unique ID of the created eB/L"),
-  version: z.number().int().describe("Initial version of the created eB/L (usually 1)"),
-  holder: z.string().describe("DID of the current holder/owner of the created eB/L"),
-}).describe("Output schema for the issue_ebl MCP Tool, confirming creation.");
-
+export const issueEblOutputSchema = z
+  .object({
+    id: z.string().describe('Unique ID of the created eB/L'),
+    version: z.number().int().describe('Initial version of the created eB/L (usually 1)'),
+    holder: z.string().describe('DID of the current holder/owner of the created eB/L'),
+  })
+  .describe('Output schema for the issue_ebl MCP Tool, confirming creation.');
 
 // --- Schemas below are NOT directly used for issue_ebl input/output anymore ---
 // --- but kept for potential use in other tools/resources (e.g., get_ebl) ---
@@ -106,6 +108,7 @@ export const EblSchema = z.object({
   pol: LocationSchema,
   pod: LocationSchema,
   eta: z.string().datetime().optional(),
+  issuer: z.string(),
   shipper: z.string(),
   consignee: z.string(),
   endorsee: z.string().optional(),
@@ -113,14 +116,14 @@ export const EblSchema = z.object({
   notifyParties: z.array(z.string()).optional(),
   note: z.string().optional(),
   // status: z.nativeEnum(EblStatus), // Status might be derived from events/allow_actions in backend record
-  holder: z.string(),
-  fileInfo: FileInfoSchema.optional(),
-  createdAt: z.string().datetime(),
-  createdBy: z.string(),
-  updatedAt: z.string().datetime(),
-  updatedBy: z.string(),
-  encryptContent: z.boolean().optional(),
-  // --- Fields derived from backend BillOfLadingRecord --- 
+  // holder: z.string(),
+  // fileInfo: FileInfoSchema.optional(),
+  // createdAt: z.string().datetime(),
+  // createdBy: z.string(),
+  // updatedAt: z.string().datetime(),
+  // updatedBy: z.string(),
+  // encryptContent: z.boolean().optional(),
+  // --- Fields derived from backend BillOfLadingRecord ---
   // allow_actions: z.array(z.string()).optional(), // Map from backend
   // events: z.array(z.any()).optional(), // Map from backend BillOfLadingPack
 });
