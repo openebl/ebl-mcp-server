@@ -277,18 +277,16 @@ export const handleListEblsTool = async (args: unknown) => {
 
     // Return the MCP tool response in the expected format
     return {
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: summaryText,
-          },
-          {
-            type: 'application/json',
-            json: result,
-          },
-        ],
-      },
+      content: [
+        {
+          type: 'text',
+          text: summaryText,
+        },
+        {
+          type: 'application/json',
+          json: result,
+        },
+      ],
     };
   } catch (error) {
     console.error('Error in list_ebls tool:', error);
