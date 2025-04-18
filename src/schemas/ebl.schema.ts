@@ -21,7 +21,7 @@ const FileContentSchema = z.object({
 export const issueEblInputSchema = z
   .object({
     // --- Fields required by backend API ---
-    authentication_id: z.string(),
+    // authentication_id: z.string(),
     requester_bu_id: z.string(), // Used for X-Business-Unit-ID header
     file_content: FileContentSchema, // Changed from file_info, now required
     bl_number: z.string(),
@@ -56,7 +56,8 @@ export const issueEblInputSchema = z
   .describe('Input schema for the issue_ebl MCP Tool, mapping to backend POST /ebl request.');
 
 // Refined input schema for conditional 'endorsee' and 'notify_parties' requirements
-export const refinedIssueEblInputSchema = issueEblInputSchema.refine(
+export const refinedIssueEblInputSchema = issueEblInputSchema;
+/*.refine(
   (data: z.infer<typeof issueEblInputSchema>) => {
     // If issuing (not drafting) and it's 'to_order', endorsee must be provided
     if (!data.draft && data.to_order && (typeof data.endorsee !== 'string' || data.endorsee.trim() === '')) {
@@ -75,6 +76,7 @@ export const refinedIssueEblInputSchema = issueEblInputSchema.refine(
     path: ['endorsee', 'notify_parties'],
   },
 );
+*/
 
 // --- Output Schema ---
 // Represents the simplified confirmation returned by the backend POST /ebl
