@@ -9,21 +9,63 @@ import { fetchAuthenticationId } from '../util/auth.js';
 type BillOfLadingRecord = components['schemas']['BillOfLadingRecord'];
 
 /**
+ * Fetches file content from a URL and returns it in the format expected by the API
+ */
+async function fetchFileFromUrl(url: string): Promise<{ name: string; type: string; content: string }> {
+  try {
+    // Fetch the file from the URL using native fetch API
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file from URL: ${response.status} ${response.statusText}`);
+    }
+
+    // Get content type and extract filename from Content-Disposition or URL
+    const contentType = response.headers.get('content-type') || 'application/pdf';
+
+    // Try to get filename from Content-Disposition header
+    let filename = '';
+    const contentDisposition = response.headers.get('content-disposition');
+    if (contentDisposition) {
+      const filenameMatch = /filename="?([^"]*)"?/i.exec(contentDisposition);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    // If no filename from headers, extract from URL
+    if (!filename) {
+      const urlPath = new URL(url).pathname;
+      const pathParts = urlPath.split('/');
+      filename = pathParts[pathParts.length - 1] || 'document.pdf';
+    }
+
+    // Convert file to base64
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64Content = buffer.toString('base64');
+
+    return {
+      name: filename,
+      type: contentType,
+      content: base64Content,
+    };
+  } catch (error) {
+    console.error('Error fetching file from URL:', error);
+    throw new Error(`Failed to fetch file from URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Converts the input from MCP format to the OpenAPI schema format
  */
-const convertMcpInputToApiRequest = (
+const convertMcpInputToApiRequest = async (
   input: z.infer<typeof refinedIssueEblInputSchema>,
   authentication_id: string,
-): components['schemas']['UpdateBillOfLadingRequest'] => {
+): Promise<components['schemas']['UpdateBillOfLadingRequest']> => {
   // Most fields map directly from MCP input to API request
-  return {
+  const baseRequest = {
     authentication_id,
-    // Map file_content to file as expected by the OpenAPI schema
-    file: {
-      name: input.file_content.name,
-      type: input.file_content.type,
-      content: input.file_content.content,
-    },
     bl_number: input.bl_number,
     bl_doc_type: input.bl_doc_type,
     pol: input.pol,
@@ -34,11 +76,32 @@ const convertMcpInputToApiRequest = (
     draft: input.draft,
     to_order: input.to_order,
     eta: input.eta,
-    endorsee: input.endorsee,
+    endorsee: input.endorsee ?? undefined,
     notify_parties: input.notify_parties,
     note: input.note,
     encrypt_content: input.encrypt_content,
   };
+
+  // Handle file content based on its source type
+  if (input.file_content.source === 'url') {
+    // For URL source, fetch the file and convert to expected format
+    const fileData = await fetchFileFromUrl(input.file_content.url);
+
+    return {
+      ...baseRequest,
+      file: fileData,
+    };
+  } else {
+    // For direct content source, map file_content to file as expected by the OpenAPI schema
+    return {
+      ...baseRequest,
+      file: {
+        name: input.file_content.name,
+        type: input.file_content.type,
+        content: input.file_content.content,
+      },
+    };
+  }
 };
 
 /**
@@ -71,7 +134,7 @@ export const handleIssueEblTool = async (args: unknown) => {
     const authentication_id = await fetchAuthenticationId(validatedArgs.requester_bu_id);
 
     // Convert MCP input to API request format
-    const requestBody = convertMcpInputToApiRequest(validatedArgs, authentication_id);
+    const requestBody = await convertMcpInputToApiRequest(validatedArgs, authentication_id);
 
     // Create API client using openapi-fetch
     const client = createClient<paths>({ baseUrl: process.env.BU_SERVER_URL });
@@ -160,13 +223,48 @@ export const getIssueEblToolDefinition = () => ({
       },
       file_content: {
         type: 'object',
-        properties: {
-          name: { type: 'string' },
-          type: { type: 'string' },
-          content: { type: 'string' },
-        },
-        required: ['name', 'type', 'content'],
-        description: 'File content information including base64-encoded content',
+        oneOf: [
+          {
+            // URL source variant
+            properties: {
+              source: {
+                type: 'string',
+                enum: ['url'],
+                description: 'Indicates file content will be fetched from a URL',
+              },
+              url: {
+                type: 'string',
+                format: 'uri',
+                description: 'URL to the PDF file to use for the eBL',
+              },
+            },
+            required: ['source', 'url'],
+          },
+          {
+            // Direct content variant
+            properties: {
+              source: {
+                type: 'string',
+                enum: ['content'],
+                description: 'Indicates file content is provided directly',
+              },
+              name: {
+                type: 'string',
+                description: 'Filename of the document',
+              },
+              type: {
+                type: 'string',
+                description: 'MIME type of the document (e.g., application/pdf)',
+              },
+              content: {
+                type: 'string',
+                description: 'Base64-encoded content of the document',
+              },
+            },
+            required: ['source', 'name', 'type', 'content'],
+          },
+        ],
+        description: 'File content information - either a URL to fetch from or direct base64-encoded content',
       },
       bl_number: {
         type: 'string',

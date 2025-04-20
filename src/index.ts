@@ -5,14 +5,14 @@ import express from 'express';
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { getIssueEblToolDefinition, handleIssueEblTool } from './tools/issue-ebl.js';
 import { getListEblsToolDefinition, handleListEblsTool } from './tools/list-ebls.js';
 import { getPingToolDefinition, handlePingTool } from './tools/ping.js';
 
 // Check if HTTP server should be enabled (default: true)
-const enableHttpServer = process.env.ENABLE_HTTP_SERVER !== 'false';
-const httpServerPort = parseInt(process.env.HTTP_SERVER_PORT || '3400', 10);
+const httpServerPort = parseInt(process.env.PORT || '3400', 10);
 
 // Create the server
 const server = new Server(
@@ -29,7 +29,6 @@ const server = new Server(
 
 // Register tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  console.info('Listing tools');
   return {
     tools: [getPingToolDefinition(), getIssueEblToolDefinition(), getListEblsToolDefinition()],
   };
@@ -37,7 +36,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 // Implement the tool handler
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  console.info('Calling tool', request);
   const toolName = request.params.name;
   const toolArgs = request.params.arguments;
 
@@ -69,25 +67,33 @@ function main() {
   console.error('Environment variables loaded:', {
     BU_SERVER_URL: process.env.BU_SERVER_URL || 'not set',
     BU_SERVER_API_KEY: process.env.BU_SERVER_API_KEY ? '****' : 'not set',
-    ENABLE_HTTP_SERVER: enableHttpServer ? 'true' : 'false',
-    HTTP_SERVER_PORT: httpServerPort,
+    PORT: httpServerPort,
   });
+
+  // Check if we should enable stdio transport
+  const enableStdio = process.argv.includes('--stdio') || process.env.ENABLE_STDIO === 'true';
+
+  if (enableStdio) {
+    console.error('Starting stdio transport');
+    const stdioTransport = new StdioServerTransport();
+    server.connect(stdioTransport);
+  }
 
   const app = express();
   app.get('/sse', async (req, res) => {
-    console.log('Received connection:', req.query.sessionId);
+    // console.error('Received connection:', req.query.sessionId);
     const transport = new SSEServerTransport('/message', res);
     transports[transport.sessionId] = transport;
     await server.connect(transport);
 
     res.on('close', () => {
-      console.info('connection closed:', transport.sessionId);
+      // console.info('connection closed:', transport.sessionId);
       delete transports[transport.sessionId];
     });
   });
 
   app.post('/message', async (req, res) => {
-    console.log('Received message:', req.query.sessionId);
+    console.error('Received message:', req.query.sessionId);
     const sessionId = req.query.sessionId as string;
     const transport = transports[sessionId];
     if (!transport) {
@@ -99,8 +105,8 @@ function main() {
   });
 
   app.listen(httpServerPort, () => {
-    console.info(`HTTP Server started on port ${httpServerPort}`);
-    console.info(`- SSE endpoint: http://localhost:${httpServerPort}/sse`);
+    // console.info(`HTTP Server started on port ${httpServerPort}`);
+    // console.info(`- SSE endpoint: http://localhost:${httpServerPort}/sse`);
   });
 }
 

@@ -11,11 +11,20 @@ const LocationSchema = z.object({
 });
 
 // Schema for File Content (required for backend POST /ebl)
-const FileContentSchema = z.object({
-  name: z.string(),
-  type: z.string(), // MIME type
-  content: z.string(), // Base64 encoded content
-});
+const FileContentSchema = z.discriminatedUnion('source', [
+  // URL source option
+  z.object({
+    source: z.literal('url'),
+    url: z.string().url(),
+  }),
+  // Direct content source option
+  z.object({
+    source: z.literal('content'),
+    name: z.string(),
+    type: z.string(), // MIME type
+    content: z.string(), // Base64 encoded content
+  }),
+]);
 
 // Base Input schema for issuing a new electronic Bill of Lading (matching backend request body)
 export const issueEblInputSchema = z
@@ -36,7 +45,7 @@ export const issueEblInputSchema = z
     // --- Optional/Conditional fields based on backend API ---
     to_order: z.boolean().optional(), // Optional in backend request
     eta: z.string().date().optional(), // Optional, format: date
-    endorsee: z.string().optional(), // Optional, DID, required if !draft && to_order
+    endorsee: z.string().nullable().optional(), // Optional, DID, required if !draft && to_order
     notify_parties: z.array(z.string()).max(3).optional(), // Optional, DIDs, required if !draft && to_order
     note: z.string().optional(),
     encrypt_content: z.boolean().optional().default(false),
@@ -113,7 +122,7 @@ export const EblSchema = z.object({
   issuer: z.string(),
   shipper: z.string(),
   consignee: z.string(),
-  endorsee: z.string().optional(),
+  endorsee: z.string().nullable().optional(),
   releaseAgent: z.string(),
   notifyParties: z.array(z.string()).optional(),
   note: z.string().optional(),

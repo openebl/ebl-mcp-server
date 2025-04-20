@@ -32,8 +32,8 @@ export interface FileInfo {
  * B/L Document Type (Master or House).
  */
 export enum BillOfLadingDocumentType {
-  Master = "MasterBillOfLading",
-  House = "HouseBillOfLading",
+  Master = 'MasterBillOfLading',
+  House = 'HouseBillOfLading',
 }
 
 /**
@@ -67,7 +67,7 @@ export interface Ebl {
   eta?: string; // Estimated Time of Arrival (ISO 8601 date string)
   shipper: string; // DID of the shipper Business Unit
   consignee: string; // DID of the consignee Business Unit
-  endorsee?: string; // DID of the endorsee (required if toOrder=true and not draft)
+  endorsee?: string | null; // DID of the endorsee (required if toOrder=true and not draft)
   releaseAgent: string; // DID of the release agent Business Unit
   notifyParties?: string[]; // DIDs of notify parties (max 3)
   note?: string; // Additional notes

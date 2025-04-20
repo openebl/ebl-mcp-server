@@ -13,7 +13,8 @@
     "build": "tsc && chmod 755 dist/index.js",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "debug": "npx @modelcontextprotocol/inspector node dist/index.js"
+    "debug": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "deploy": "zeabur deploy --service-id 680233e4f596d358624ac03d"
   },
   "files": [
     "dist"

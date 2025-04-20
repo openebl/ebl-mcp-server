@@ -282,10 +282,10 @@ export const handleListEblsTool = async (args: unknown) => {
           type: 'text',
           text: summaryText,
         },
-        {
-          type: 'application/json',
-          json: result,
-        },
+        // {
+        //   type: 'application/json',
+        //   json: result,
+        // },
       ],
     };
   } catch (error) {
@@ -346,6 +346,10 @@ const formatResultSummary = (result: z.infer<typeof listEblsOutputSchema>): stri
       summary += `\n   ID: ${ebl.id}`;
       summary += `\n   POL: ${ebl.pol.locationName || ebl.pol.UNLocationCode}`;
       summary += `\n   POD: ${ebl.pod.locationName || ebl.pod.UNLocationCode}`;
+      summary += `\n   Issuer: ${ebl.issuer}`;
+      summary += `\n   Shipper: ${ebl.shipper}`;
+      summary += `\n   Consignee: ${ebl.consignee}`;
+      summary += `\n   Release Agent: ${ebl.releaseAgent}`;
       // summary += `\n   Current holder: ${ebl.holder}`;
     });
   } else {
