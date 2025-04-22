@@ -11,20 +11,9 @@ const LocationSchema = z.object({
 });
 
 // Schema for File Content (required for backend POST /ebl)
-const FileContentSchema = z.discriminatedUnion('source', [
-  // URL source option
-  z.object({
-    source: z.literal('url'),
-    url: z.string().url(),
-  }),
-  // Direct content source option
-  z.object({
-    source: z.literal('content'),
-    name: z.string(),
-    type: z.string(), // MIME type
-    content: z.string(), // Base64 encoded content
-  }),
-]);
+const FileContentSchema = z.object({
+  url: z.string().url(),
+});
 
 // Base Input schema for issuing a new electronic Bill of Lading (matching backend request body)
 export const issueEblInputSchema = z

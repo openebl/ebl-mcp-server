@@ -59,10 +59,10 @@ async function fetchFileFromUrl(url: string): Promise<{ name: string; type: stri
 /**
  * Converts the input from MCP format to the OpenAPI schema format
  */
-const convertMcpInputToApiRequest = async (
+async function convertMcpInputToApiRequest(
   input: z.infer<typeof refinedIssueEblInputSchema>,
   authentication_id: string,
-): Promise<components['schemas']['UpdateBillOfLadingRequest']> => {
+): Promise<components['schemas']['UpdateBillOfLadingRequest']> {
   // Most fields map directly from MCP input to API request
   const baseRequest = {
     authentication_id,
@@ -82,32 +82,19 @@ const convertMcpInputToApiRequest = async (
     encrypt_content: input.encrypt_content,
   };
 
-  // Handle file content based on its source type
-  if (input.file_content.source === 'url') {
-    // For URL source, fetch the file and convert to expected format
-    const fileData = await fetchFileFromUrl(input.file_content.url);
+  // Fetch the file from the URL
+  const fileData = await fetchFileFromUrl(input.file_content.url);
 
-    return {
-      ...baseRequest,
-      file: fileData,
-    };
-  } else {
-    // For direct content source, map file_content to file as expected by the OpenAPI schema
-    return {
-      ...baseRequest,
-      file: {
-        name: input.file_content.name,
-        type: input.file_content.type,
-        content: input.file_content.content,
-      },
-    };
-  }
-};
+  return {
+    ...baseRequest,
+    file: fileData,
+  };
+}
 
 /**
  * Extracts the simplified output from the API response
  */
-const extractOutputFromApiResponse = (response: BillOfLadingRecord): z.infer<typeof issueEblOutputSchema> => {
+function extractOutputFromApiResponse(response: BillOfLadingRecord): z.infer<typeof issueEblOutputSchema> {
   // Access nested fields based on OpenAPI schema structure
   const bl = response.bl;
 
@@ -117,7 +104,7 @@ const extractOutputFromApiResponse = (response: BillOfLadingRecord): z.infer<typ
     version: bl?.version ?? 1,
     holder: bl?.current_owner ?? '',
   };
-};
+}
 
 /**
  * Handles the issue_ebl MCP Tool request
@@ -126,7 +113,7 @@ const extractOutputFromApiResponse = (response: BillOfLadingRecord): z.infer<typ
  * 3. Makes POST /ebl request to backend using openapi-fetch
  * 4. Transforms response to match issueEblOutputSchema
  */
-export const handleIssueEblTool = async (args: unknown) => {
+export async function handleIssueEblTool(args: unknown) {
   try {
     // Parse and validate arguments using the refined schema with conditional validation
     const validatedArgs = refinedIssueEblInputSchema.parse(args);
@@ -166,14 +153,12 @@ export const handleIssueEblTool = async (args: unknown) => {
 
     // Return the MCP tool response
     return {
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: `Successfully ${validatedArgs.draft ? 'drafted' : 'issued'} eBL: ${JSON.stringify(validatedOutput, null, 2)}`,
-          },
-        ],
-      },
+      content: [
+        {
+          type: 'text',
+          text: `Successfully ${validatedArgs.draft ? 'drafted' : 'issued'} eBL: ${JSON.stringify(validatedOutput, null, 2)}`,
+        },
+      ],
     };
   } catch (error) {
     console.error('Error in issue_ebl tool:', error);
@@ -183,32 +168,28 @@ export const handleIssueEblTool = async (args: unknown) => {
       const formattedErrors = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('\n');
 
       return {
-        result: {
-          isError: true,
-          content: [
-            {
-              type: 'text',
-              text: `Validation error in issue_ebl tool:\n${formattedErrors}`,
-            },
-          ],
-        },
+        isError: true,
+        content: [
+          {
+            type: 'text',
+            text: `Validation error in issue_ebl tool:\n${formattedErrors}`,
+          },
+        ],
       };
     }
 
     // Generic error handling
     return {
-      result: {
-        isError: true,
-        content: [
-          {
-            type: 'text',
-            text: `Error in issue_ebl tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          },
-        ],
-      },
+      isError: true,
+      content: [
+        {
+          type: 'text',
+          text: `Error in issue_ebl tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        },
+      ],
     };
   }
-};
+}
 
 // Tool definition for MCP server
 export const getIssueEblToolDefinition = () => ({
@@ -223,48 +204,15 @@ export const getIssueEblToolDefinition = () => ({
       },
       file_content: {
         type: 'object',
-        oneOf: [
-          {
-            // URL source variant
-            properties: {
-              source: {
-                type: 'string',
-                enum: ['url'],
-                description: 'Indicates file content will be fetched from a URL',
-              },
-              url: {
-                type: 'string',
-                format: 'uri',
-                description: 'URL to the PDF file to use for the eBL',
-              },
-            },
-            required: ['source', 'url'],
+        properties: {
+          url: {
+            type: 'string',
+            format: 'uri',
+            description: 'URL to the PDF file to use for the eBL',
           },
-          {
-            // Direct content variant
-            properties: {
-              source: {
-                type: 'string',
-                enum: ['content'],
-                description: 'Indicates file content is provided directly',
-              },
-              name: {
-                type: 'string',
-                description: 'Filename of the document',
-              },
-              type: {
-                type: 'string',
-                description: 'MIME type of the document (e.g., application/pdf)',
-              },
-              content: {
-                type: 'string',
-                description: 'Base64-encoded content of the document',
-              },
-            },
-            required: ['source', 'name', 'type', 'content'],
-          },
-        ],
-        description: 'File content information - either a URL to fetch from or direct base64-encoded content',
+        },
+        required: ['url'],
+        description: 'URL to fetch the eBL document from',
       },
       bl_number: {
         type: 'string',

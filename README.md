@@ -77,3 +77,44 @@ ebl-mcp-server/
 ## License
 
 (License information will be added here)
+
+## Samples
+
+### Issue eBL
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "issue_ebl",
+    "arguments": {
+      "requester_bu_id": "did:openebl:3993ace7-eb6c-4a1f-bed8-121643a278c9",
+      "file_content": {
+        "url": "https://flash-store.kevin-a65.workers.dev/file/pStQB1tvsV89Ms6AhImTQQ"
+      },
+      "bl_number": "BL-20250417-12999",
+      "bl_doc_type": "HouseBillOfLading",
+      "pol": {
+        "locationName": "YanTian",
+        "UNLocationCode": "CNYTN"
+      },
+      "pod": {
+        "locationName": "LA",
+        "UNLocationCode": "USLAX"
+      },
+      "shipper": "did:openebl:d2856f4e-e636-4cf0-9110-fbb45304e614",
+      "consignee": "did:openebl:0158341d-5c6b-4121-bfe4-535c7606bbd5",
+      "release_agent": "did:openebl:66c71465-3d0b-43d8-9e1b-c88c7a7634ca",
+      "draft": false,
+      "to_order": false,
+      "eta": "2025-05-01",
+      "endorsee": "",
+      "notify_parties": [],
+      "note": "Test from MCP",
+      "encrypt_content": false
+    },
+    "_meta": {
+      "progressToken": 11
+    }
+  }
+}
+```
