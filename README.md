@@ -72,11 +72,44 @@ ebl-mcp-server/
 
 ## Contributing
 
-(Details on how to contribute will be added here)
+We welcome contributions to improve the EBL MCP Server! Please follow these guidelines to ensure a smooth collaboration:
+
+### Development Workflow
+
+1. Fork the repository and create a feature branch from `main`
+2. Install dependencies with `pnpm install`
+3. Make your changes following our coding standards
+4. Add tests for new functionality
+5. Run tests to ensure everything works as expected
+6. Submit a pull request
+
+### Coding Standards
+
+- Write TypeScript code with proper type definitions
+- Follow functional programming paradigms; avoid using classes
+- Ensure all functions are pure and side-effect free when possible
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content
+- Implement comprehensive error handling using @modelcontextprotocol/sdk's mechanisms
+
+### Pull Request Process
+
+1. Update documentation to reflect any changes
+2. Ensure code passes all tests
+3. Get approval from at least one maintainer
+4. Maintain clean commit history with meaningful commit messages
+
+### Reporting Issues
+
+If you find a bug or have a feature request, please create an issue providing:
+- A clear description of the problem/request
+- Steps to reproduce (for bugs)
+- Expected and actual behavior (for bugs)
+- Any relevant logs or screenshots
 
 ## License
 
-(License information will be added here)
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Samples
 
